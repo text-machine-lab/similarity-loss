@@ -8,7 +8,17 @@ The input data is stored under the `data` folder, the trained model is saved to 
 
 ## Requirements and dependencies
 Requires PyTorch v0.4 and higher.
+`nltk` and `tqdm` libraries are used:
+```sh
+pip install nltk
+pip install tqdm
+```
+For visualization purposes (optional), the Visdom library is used (https://github.com/facebookresearch/visdom).
 
+```sh
+pip install visdom
+```
+Please refer to _visdom_ library readme for setup. In the current implementation the visualization of the training curve is done if a port number is passed to a trining function (given that the server is running).
 
 ## Autoencoder 
 Run the autoencoder training as 
@@ -29,7 +39,7 @@ Possible values for the <loss> argument:
 
 ## External usage
 
-Alternatively, the losses are implemented as PyTorch Module and can be incorporated directly into other models.
+Alternatively, the losses are implemented as PyTorch Module classes and can be incorporated directly into other models.
 
 Note that word similarities are computed using pre-trained fastText embeddings availble at [https://fasttext.cc/docs/en/english-vectors.html].
 Other word vectors can be used instead (the location of the file should be specified).
