@@ -18,10 +18,10 @@ python main.py -loss <loss>
 ```
 
 Possible values for the <loss> argument:
-⋅0: Regular cross entropy loss
-⋅1: Weighted cross entropy loss
-⋅2: Weighted similarity loss
-⋅3: Soft label loss
+*0: Regular cross entropy loss
+*1: Weighted cross entropy loss
+*2: Weighted similarity loss
+*3: Soft label loss
 
 ## External usage
 
