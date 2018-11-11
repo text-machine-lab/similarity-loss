@@ -13,6 +13,7 @@ from tqdm import tqdm
 from autoencoder import Autoencoder
 from dataset import AutoencoderDataset
 from loss import SoftLabelLoss, WeightedCrossEntropyLoss, WeightedSimilarityLoss
+from parameters import params, locations
 from train import train
 from util import cuda, match_embeddings
 from vocabulary import Vocabulary
@@ -35,19 +36,20 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
     # PARAMETERS #
-    max_len = 15
-    hidden_size = 256
-    embedding_dim = 300
-    batch_size = 300
-    n_epochs = 1000
+    max_len = params['max_len']
+    hidden_size = params['hidden_size']
+    embedding_dim = params['embedding_dim']
+    batch_size = params['batch_size']
+    n_epochs = params['n_epochs']
+    N = params['N']
 
     # DATA FILES #
-    train_loc = 'yelp/merged/train'
-    dev_loc = 'yelp/merged/dev'
-    fasttext_loc = '/data1/word_vectors/fastText/crawl-300d-2M.vec'
-    w2vec_loc = 'vocabulary/word_to_vec.pkl'
-    model_loc = 'model.pt'
-    stopwordsfile = 'stop_words.txt'
+    train_loc = locations['train_loc']
+    dev_loc = locations['dev_loc']
+    fasttext_loc = locations['fasttext_loc']
+    w2vec_loc = locations['w2vec_loc']
+    model_loc = locations['model_loc']
+    stopwordsfile = locations['stopwordsfile']
 
     # VOCABULARY #
     special_tokens = [INIT_TOKEN, UNK_TOKEN, END_TOKEN, PAD_TOKEN]
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     elif args['loss'] == '2':
         criterion = WeightedSimilarityLoss(embeddings, ignore_idx=pad_idx)
     elif args['loss'] == '3':
-        criterion = SoftLabelLoss(stop_idx, embeddings, N=5, ignore_idx=pad_idx)
+        criterion = SoftLabelLoss(stop_idx, embeddings, N=N, ignore_idx=pad_idx)
 
     # TRAIN #
     train(model, model_loc, criterion, optimizer, dataloaders, n_epochs, idx2w, pad_idx, port=8098)

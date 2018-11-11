@@ -64,21 +64,11 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
                 model.train(False)
                 losses_dev = 0
                 batch_dev = 0
-            correct = 0
-            total = 0
             for i_batch, sample_batched in enumerate(tqdm(dataloaders[phase])):
                 inputs = sample_batched
                 inputs = variable(inputs)
 
                 outputs = model(inputs)
-
-                predictions = torch.max(F.softmax(outputs, dim=2), dim=2)[1]
-                mask = torch.ne(inputs, pad_idx).long()
-                predictions_masked = predictions*mask
-                match = predictions_masked.eq(inputs)
-
-                correct += torch.sum(torch.eq(torch.sum(match, dim=1), inputs.shape[1])).item()
-                total += inputs.shape[0]
 
                 targets = inputs.view(-1)
                 outputs = outputs.view(targets.shape[0], -1)
@@ -97,21 +87,17 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
 
                 if i_batch % 500 == 0:
                     print('_________________________________________')
-                    accuracy = correct*1.0/total
-                    print('Reconstruction accuracy: {:10.4f}'.format(accuracy))
                     print('Epoch #{}'.format(epoch))
 
                     if phase == 'dev':
                         loss_dev = losses_dev/(i_batch+1)
                         print('DEV  \t loss: {:.4f}'.format(loss_dev))
-                        dev_accuracy = accuracy
                         if best is None or loss_dev < best:
                             best = loss.item()
                             save_weights(model, filename)
 
                     elif phase == 'train':
                         loss_train = losses_train/(i_batch+1)
-                        train_accuracy = accuracy
                         print('TRAIN \t loss: {:.4f}'.format(loss_train))
 
                     # Check outputs on a random example
