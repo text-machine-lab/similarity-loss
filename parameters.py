@@ -10,7 +10,7 @@ params = {
 locations = {
     'train_loc': 'data/train',
     'dev_loc': 'data/dev',
-    'fasttext_loc': '/data1/word_vectors/fastText/crawl-300d-2M.vec',
+    'fasttext_loc': 'data/crawl-300d-2M.vec',
     'w2vec_loc': 'vocabulary/word_to_vec.pkl',
     'model_loc': 'models/model.pt',
     'stopwordsfile': 'data/stop_words.txt'
