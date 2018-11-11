@@ -3,7 +3,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
-from visdom import Visdom
+try:
+    from visdom import Visdom
+except Exception:
+    pass
 
 from util import variable, idx2text, save_weights
 
