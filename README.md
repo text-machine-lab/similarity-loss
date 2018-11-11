@@ -3,10 +3,10 @@ based on the paper "Similarity-Based Reconstruction Loss for Meaning Representat
 
 ## Description
 PyTorch implementation of the autoencoder that uses word similarities for the reconstruction of the input sentences.
-Parameters used for training the model are stored in a separate file `parameters.py`.
+Parameters and file locations used for training the model are stored in a separate file `parameters.py`.
 The input data is stored under the `data` folder, the trained model is saved to the `models` folder.
 
-## Requirements
+## Requirements and dependencies
 Requires PyTorch v0.4 and higher.
 
 
@@ -23,10 +23,14 @@ Possible values for the <loss> argument:
 * `2`: Weighted similarity loss
 * `3`: Soft label loss
 
+*Notes*
+- Weighted similarity loss is negative (please refer to the paper for mathematical details)
+- Soft label loss considers N nearest word neighbors, where N is a model parameter. The nomalization of the encoded true-label token can be switched off by passing the `normalization=False` to the loss constructor. if `N=1` than the loss is identical to regular cross entropy. If `N` is equal to the vocabulary size, the loss becomes the _Weighted cross entropy loss_
+
 ## External usage
 
 Alternatively, the losses are implemented as PyTorch Module and can be incorporated directly into other models.
 
-Note that word similarities are computed using pre-trained fastText embeddings availble at ...
-Other word vectors can be used instead (the location of the file should be spcified).
+Note that word similarities are computed using pre-trained fastText embeddings availble at [https://fasttext.cc/docs/en/english-vectors.html].
+Other word vectors can be used instead (the location of the file should be specified).
 
