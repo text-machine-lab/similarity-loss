@@ -37,13 +37,13 @@ class Autoencoder(nn.Module):
         # Layers
         if embeddings is not None:
             self.embeddings = cuda(embeddings)
-            self.emb = nn.Embedding.from_pretrained(self.embeddings, freeze=False)
+            self.emb = nn.Embedding.from_pretrained(self.embeddings, freeze=True)
         else:
             self.emb = nn.Embedding(self.voc_size, self.embedding_dim)
         self.enc = nn.LSTM(self.embedding_dim, self.hidden_size, batch_first=True)
         self.dec = nn.LSTMCell(self.embedding_dim, self.hidden_size)
         self.lin = nn.Linear(self.hidden_size, self.voc_size)
-        self.dropout = nn.Dropout(p=0.3)
+        self.dropout = nn.Dropout(p=0.5)
 
     def encoder(self, inputs):
         # Get lengths
@@ -82,7 +82,7 @@ class Autoencoder(nn.Module):
             if targets is not None and i < len(targets):
                 step = targets[:, i]
             else:
-                step = torch.max(F.softmax(output, dim=-1), 1)[1]
+                step = torch.multinomial(F.softmax(output, dim=-1), 1).squeeze(-1)
             outputs.append(output)
 
         outputs = torch.stack(outputs, dim=1)
@@ -95,7 +95,5 @@ class Autoencoder(nn.Module):
             targets = None
 
         hidden = self.encoder(inputs)
-        reg_hidden = self.dropout(hidden)
-        outputs = self.decoder(reg_hidden, targets)
+        outputs = self.decoder(hidden, targets)
         return outputs
-

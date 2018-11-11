@@ -51,10 +51,6 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
     # Prepare for visualization if Visdom server is running
     if port:
         viz = Visdom(port=port)
-        viz.line(X=np.array([0]), Y=np.expand_dims(np.array([0, 0]), axis=0), win='MattAutoEncoderLoss',
-                 opts={'title': 'MattLoss', 'legend': ['Train', 'Dev']}, )
-        viz.line(X=np.array([0]), Y=np.expand_dims(np.array([0, 0]), axis=0), win='MattAutoEncoderAccuracy',
-                 opts={'title': 'MattAccuracy', 'legend': ['Train', 'Dev']}, )
 
     best = None
 
@@ -101,9 +97,9 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
 
                 if i_batch % 500 == 0:
                     print('_________________________________________')
-                    print('Epoch #{}'.format(epoch))
                     accuracy = correct*1.0/total
                     print('Reconstruction accuracy: {:10.4f}'.format(accuracy))
+                    print('Epoch #{}'.format(epoch))
 
                     if phase == 'dev':
                         loss_dev = losses_dev/(i_batch+1)
@@ -115,10 +111,8 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
 
                     elif phase == 'train':
                         loss_train = losses_train/(i_batch+1)
-                        print('TRAIN \t loss: {:.4f}'.format(loss_train))
                         train_accuracy = accuracy
-                    correct = 0
-                    total = 0
+                        print('TRAIN \t loss: {:.4f}'.format(loss_train))
 
                     # Check outputs on a random example
                     input_text, predicted_text = check_random_example(dataloaders[phase].dataset, model, idx2w)
@@ -128,9 +122,11 @@ def train(model, filename, criterion, optimizer, dataloaders, n_epochs, idx2w, p
         epoch_loss_train = losses_train/batch_train
         epoch_loss_dev = losses_dev/batch_dev
         if port:
-            viz.line(X=np.array([epoch]), Y=np.expand_dims(np.array([epoch_loss_train, epoch_loss_dev]), axis=0),
-                     win='MattAutoEncoderLoss', update='append')
-            viz.line(X=np.array([epoch]), Y=np.expand_dims(np.array([train_accuracy, dev_accuracy]), axis=0),
-                     win='MattAutoEncoderAccuracy', update='append')
+            if epoch == 1:
+                viz.line(X=np.array([epoch]), Y=np.expand_dims(np.array([epoch_loss_train, epoch_loss_dev]), axis=0), win='AutoencoderLoss',
+                         opts={'title': 'Loss', 'legend': ['Train', 'Dev']}, )
+            else:
+                viz.line(X=np.array([epoch]), Y=np.expand_dims(np.array([epoch_loss_train, epoch_loss_dev]), axis=0),
+                     win='AutoencoderLoss', update="append", opts={'title': 'Loss', 'legend': ['Train', 'Dev']})
 
 

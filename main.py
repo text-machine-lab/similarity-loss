@@ -1,10 +1,14 @@
+import argparse
 import numpy as np
 import os.path
 import pickle
 import random
+
 import torch
+import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from autoencoder import Autoencoder
 from dataset import AutoencoderDataset
@@ -21,11 +25,20 @@ PAD_TOKEN = '<pad>'
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-loss", help="loss function used. "
+                                     "0 is cross-entropy;"
+                                     "1 is weighted cross-entropy;"
+                                     "2 is weighted similarity;"
+                                     "3 is soft-label")
+    args = vars(parser.parse_args())
+
     # PARAMETERS #
     max_len = 15
     hidden_size = 256
     embedding_dim = 300
-    batch_size = 150
+    batch_size = 300
     n_epochs = 1000
 
     # DATA FILES #
@@ -33,7 +46,7 @@ if __name__ == "__main__":
     dev_loc = 'yelp/merged/dev'
     fasttext_loc = '/data1/word_vectors/fastText/crawl-300d-2M.vec'
     w2vec_loc = 'vocabulary/word_to_vec.pkl'
-    model_loc = 'models/top40_unnormed_yelp.pt'
+    model_loc = 'model.pt'
     stopwordsfile = 'stop_words.txt'
 
     # VOCABULARY #
@@ -61,10 +74,11 @@ if __name__ == "__main__":
             w2vec = pickle.load(f)
     else:
         w2vec = {}
+        print("Loading word vectors...")
         with open(fasttext_loc) as f:
             f.__next__()
-            for line in f:
-                items = line.split(' ')
+            for line in tqdm(f):
+                items = line.strip().split(' ')
                 token = items[0]
                 vector = np.array(items[1:]).astype(float)
                 w2vec[token] = vector
@@ -82,14 +96,20 @@ if __name__ == "__main__":
     dataloaders = {'train': dataloader_train, 'dev': dataloader_dev}
 
     # MODEL #
-    model = cuda(Autoencoder(hidden_size, voc_size, pad_idx, init_idx, max_len, embeddings=None, embedding_dim=300))
-    optimizer = optim.Adam([parameter for parameter in list(model.parameters()) if parameter.requires_grad], lr=0.001)
-    # criterion = SoftLabelLoss(stop_idx, embeddings, N=5, ignore_idx=pad_idx)
-    criterion = WeightedCrossEntropyLoss(embeddings, ignore_idx=pad_idx)
-    # criterion = WeightedSimilarityLoss(embeddings, ignore_idx=pad_idx)
+    model = cuda(Autoencoder(hidden_size, voc_size, pad_idx, init_idx, max_len, embeddings=embeddings))
+    optimizer = optim.Adam([parameter for parameter in list(model.parameters()) if parameter.requires_grad], lr=0.00005)
+
+    if args['loss'] == '0':
+        criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
+    elif args['loss'] == '1':
+        criterion = WeightedCrossEntropyLoss(embeddings, ignore_idx=pad_idx)
+    elif args['loss'] == '2':
+        criterion = WeightedSimilarityLoss(embeddings, ignore_idx=pad_idx)
+    elif args['loss'] == '3':
+        criterion = SoftLabelLoss(stop_idx, embeddings, N=5, ignore_idx=pad_idx)
 
     # TRAIN #
-    train(model, model_loc, criterion, optimizer, dataloaders, n_epochs, idx2w, pad_idx)
+    train(model, model_loc, criterion, optimizer, dataloaders, n_epochs, idx2w, pad_idx, port=8098)
 
 
 
