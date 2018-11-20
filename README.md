@@ -35,7 +35,7 @@ For training an autoencoder, please specify the corresponding word vectors file 
 ## Use cases:
 ### Autoencoder training
 
-For training an autoencoder, please put the training and the test .txt files under the `data/` directory. Current implementation assumes that data files contain input sentences (i.e. training examples) separated by newlines.
+For training an autoencoder, please put the training and the test .txt files under the `data/` directory. If the name of the training file is `train.txt` and the name of the test file is `test.txt` then the `train_loc` and the `test_loc` key of the `params` dict in `parameters.py` should be set to `data/train.txt` and `data/test.txt` respectively. Current implementation assumes that data files contain input sentences (i.e. training examples) separated by newlines. 
 
 Run the autoencoder training as:
 
