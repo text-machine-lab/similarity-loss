@@ -1,4 +1,4 @@
-nltk
-numpy
-tqdm
-visdom
+nltk==3.2.5
+numpy==1.14.0
+tqdm==4.19.5
+visdom==0.1.7
