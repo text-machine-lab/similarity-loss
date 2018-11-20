@@ -1,4 +1,3 @@
-import logging
 import numpy as np
 import torch
 
@@ -37,17 +36,28 @@ def variable(obj, volatile=False):
     return obj
 
 
-def match_embeddings(idx2w, w2vec, dim):
+def match_embeddings(idx2w, w2vec, dim, bigram=False):
     embeddings = []
     voc_size = len(idx2w)
     print("Matching embeddings to vocabulary ids...")
+
+    if bigram:
+        dim *= 2
+
     for idx in tqdm(range(voc_size)):
         word = idx2w[idx]
         if word not in w2vec:
-            embeddings.append(np.random.uniform(low=-1.2, high=1.2, size=(dim, )))
+            if not bigram:
+                embeddings.append(np.random.uniform(low=-1.2, high=1.2, size=(dim, )))
+            else:
+                try:
+                    first, second = w2vec[word[0]], w2vec[word[1]]
+                    # Bigram representation
+                    embeddings.append(np.concatenate(first, second))
+                except Exception:
+                    embeddings.append(np.random.uniform(low=-1.2, high=1.2, size=(dim,)))
         else:
             embeddings.append(w2vec[word])
-
     embeddings = np.stack(embeddings)
     return embeddings
 
@@ -67,7 +77,7 @@ def idx2text(token_ids, idx2w):
         if idx2w[id] == '<end>':
             break
         if idx2w[id] != '<pad>':
-            sent += idx2w[id] + ' '
+            sent += str(idx2w[id]) + ' '
     return sent
 
 
@@ -79,7 +89,6 @@ def save_weights(model, filename):
         model = model.module
 
     torch.save(model.state_dict(), filename)
-    logging.info('Model saved: {os.path.basename(filename)}')
 
 
 def restore_weights(model, filename):
@@ -94,11 +103,10 @@ def restore_weights(model, filename):
     if isinstance(model, torch.nn.DataParallel):
         model = model.module
     model.load_state_dict(state_dict)
-    logging.info('Model restored: {os.path.basename(filename)}')
     return
 
 
-def encode_sentence(sentence, w2idx, max_len, pad_token='<pad>', end_token='<end>', tokenizer=None):
+def encode_sentence(sentence, w2idx, max_len, pad_token='<pad>', end_token='<end>', tokenizer=None, bigram=False):
     """
     Process the sequence of ids by padding it to a specified length and adding an ending token
     Args:
@@ -111,7 +119,7 @@ def encode_sentence(sentence, w2idx, max_len, pad_token='<pad>', end_token='<end
     Returns (numpy array): Transformed sentence
 
     """
-    enc_sentence = text2idx(sentence, w2idx, tokenizer)
+    enc_sentence = text2idx(sentence, w2idx, tokenizer, bigram=bigram)
     if len(enc_sentence) > max_len - 1:
         enc_sentence = enc_sentence[:max_len-1]
     enc_sentence = enc_sentence + [w2idx[end_token]]
@@ -120,7 +128,7 @@ def encode_sentence(sentence, w2idx, max_len, pad_token='<pad>', end_token='<end
     return enc_sentence
 
 
-def text2idx(words, w2idx, tokenizer=None):
+def text2idx(words, w2idx, tokenizer=None, bigram=False):
     """
     Convert a string or an iterable of tokens into token ids according to the vocabulary.
     Args:
@@ -137,6 +145,9 @@ def text2idx(words, w2idx, tokenizer=None):
         if not tokenizer:
             tokenizer = RegexpTokenizer('\w+')
         words = tokenizer.tokenize(words)
+        if bigram:
+            from nltk import bigrams
+            words = list(bigrams(words))
     ids = []
     for word in words:
         if word in w2idx.keys():

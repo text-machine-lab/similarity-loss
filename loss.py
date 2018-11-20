@@ -75,7 +75,6 @@ class SoftLabelLoss(nn.Module):
     The loss "encodes" ground-truth tokens as their similarities across the vocabulary,
     but the consideration is limited to only the top N closest words in the vocabulary.
     Stop-words are encoded using the traditional one-hot-encoding scheme.
-
     Args:
         stop_idcs (list): list of stop word ids in the vocabulary
         embeddings (torch.FloatTensor): pre-trained word embeddings

@@ -29,10 +29,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-loss", help="loss function used. "
-                                     "0 is cross-entropy;"
-                                     "1 is weighted cross-entropy;"
-                                     "2 is weighted similarity;"
-                                     "3 is soft-label")
+                                     "ce is for cross-entropy;"
+                                     "weighted-ce is for weighted cross-entropy loss;"
+                                     "weighted-sim is for weighted similarity loss;"
+                                     "soft-label is for soft-label")
     args = vars(parser.parse_args())
 
     # PARAMETERS #
@@ -42,11 +42,12 @@ if __name__ == "__main__":
     batch_size = params['batch_size']
     n_epochs = params['n_epochs']
     N = params['N']
+    bigram = params['bigrams']
 
     # DATA FILES #
     train_loc = locations['train_loc']
     dev_loc = locations['dev_loc']
-    fasttext_loc = locations['fasttext_loc']
+    fasttext_loc = locations['embeddings_loc']
     w2vec_loc = locations['w2vec_loc']
     model_loc = locations['model_loc']
     stopwordsfile = locations['stopwordsfile']
@@ -55,7 +56,8 @@ if __name__ == "__main__":
     special_tokens = [INIT_TOKEN, UNK_TOKEN, END_TOKEN, PAD_TOKEN]
     with open(train_loc) as f:
         raw_text = f.read()
-    voc = Vocabulary(raw_text)
+    voc = Vocabulary(raw_text, bigram=bigram)
+    voc.prune(threshold=1)
     for token in special_tokens:
         voc.add_token(token)
     w2idx = voc.w2idx
@@ -87,11 +89,11 @@ if __name__ == "__main__":
         with open(w2vec_loc, 'wb') as f:
             pickle.dump(w2vec, f)
     dim = len(random.choice(list(w2vec.values())))
-    embeddings = cuda(torch.FloatTensor(match_embeddings(idx2w, w2vec, dim)))
+    embeddings = cuda(torch.FloatTensor(match_embeddings(idx2w, w2vec, dim, bigram)))
 
     # DATASET #
-    dataset_train = AutoencoderDataset(train_loc, voc, max_len)
-    dataset_dev = AutoencoderDataset(dev_loc, voc, max_len)
+    dataset_train = AutoencoderDataset(train_loc, voc, max_len, bigram=bigram)
+    dataset_dev = AutoencoderDataset(dev_loc, voc, max_len, bigram=bigram)
 
     dataloader_train = DataLoader(dataset_train, batch_size, shuffle=True)
     dataloader_dev = DataLoader(dataset_dev, batch_size, shuffle=True)
@@ -101,13 +103,13 @@ if __name__ == "__main__":
     model = cuda(Autoencoder(hidden_size, voc_size, pad_idx, init_idx, max_len, embeddings=embeddings))
     optimizer = optim.Adam([parameter for parameter in list(model.parameters()) if parameter.requires_grad], lr=0.00005)
 
-    if args['loss'] == '0':
+    if args['loss'] == 'ce':
         criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
-    elif args['loss'] == '1':
+    elif args['loss'] == 'weighted-ce':
         criterion = WeightedCrossEntropyLoss(embeddings, ignore_idx=pad_idx)
-    elif args['loss'] == '2':
+    elif args['loss'] == 'weighted-sim':
         criterion = WeightedSimilarityLoss(embeddings, ignore_idx=pad_idx)
-    elif args['loss'] == '3':
+    elif args['loss'] == 'soft-label':
         criterion = SoftLabelLoss(stop_idx, embeddings, N=N, ignore_idx=pad_idx)
 
     # TRAIN #

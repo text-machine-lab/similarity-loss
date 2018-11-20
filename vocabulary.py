@@ -1,8 +1,9 @@
 import itertools
 import pickle
 
+from collections import Counter
 
-class Vocabulary:
+class Vocabulary(object):
     """
     Create a vocabulary of a training dataset.
     Args:
@@ -15,18 +16,23 @@ class Vocabulary:
         idx2w (dict): A reversed dictionary matching ids to tokens
 
     """
-    def __init__(self, text, tokenizer=None):
+    def __init__(self, text, tokenizer=None, bigram=False):
         if isinstance(text, str):
             if not tokenizer:
                 from nltk.tokenize import RegexpTokenizer
                 tokenizer = RegexpTokenizer('\w+')
-            self.tokens = set(tokenizer.tokenize(text.lower()))
 
-        elif isinstance(text, list):
-            self.tokens = set(itertools.chain.from_iterable(text))
+            tokens = tokenizer.tokenize(text.lower())
+            if bigram:
+                from nltk import bigrams
+                tokens = list(bigrams(tokens))
+            self.counts = Counter(tokens)
+            tokens = list(set(tokens))
+
         else:
-            raise TypeError('Invalid type of input data. Acceptable types are string and list.')
+            raise TypeError('Invalid type of input data. Acceptable type is string.')
 
+        self.tokens = tokens
         self.w2idx = {word: idx for idx, word in enumerate(self.tokens)}
         self.idx2w = {idx: word for word, idx in self.w2idx.items()}
 
@@ -45,6 +51,7 @@ class Vocabulary:
             print('Token "{}" is already present in the vocabulary'.format(token))
             return self
         cur_len = self.get_length()
+        self.tokens.append(token)
         self.w2idx[token] = cur_len
         self.idx2w[cur_len] = token
 
@@ -57,7 +64,13 @@ class Vocabulary:
         Returns (int): Vocabulary size
 
         """
-        return len(self.w2idx)
+        return len(self.tokens)
+
+    def prune(self, threshold=10):
+        self.tokens = list(token for token in self.tokens if self.counts[token] >= threshold)
+        self.w2idx = {word: idx for idx, word in enumerate(self.tokens)}
+        self.idx2w = {idx: word for word, idx in self.w2idx.items()}
+        assert len(self.w2idx) == len(self.idx2w)
 
     def save(self, loc):
         with open(loc, 'wb') as f:
