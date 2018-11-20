@@ -77,7 +77,7 @@ Note that every loss class takes a tensor of word embeddings as input (for compu
     <img src="https://latex.codecogs.com/svg.latex?\mathcal{L}&space;=&space;-\sum_{i=1}^V&space;\text{sim}(y_t,&space;y_i)p_i" title="\mathcal{L} = -\sum_{i=1}^V \text{sim}(y_t, y_i)p_i" />
   * Weighted cross entropy loss:  
     <img src="https://latex.codecogs.com/svg.latex?\mathcal{L}&space;=&space;-\sum_{i=1}^V&space;\text{sim}(y_t,&space;y_i)&space;\log&space;p_i" title="\mathcal{L} = -\sum_{i=1}^V \text{sim}(y_t, y_i) \log p_i" />
-  * Soft label loss:
+  * Soft label loss:  
     <img src="https://latex.codecogs.com/svg.latex?\mathcal{L}&space;=&space;-\sum_{i=1}^V&space;y_i^*log{p_i}" title="\mathcal{L} = -\sum_{i=1}^V y_i^*log{p_i}" />  
     <img src="https://latex.codecogs.com/svg.latex?y_i^*&space;=&space;\begin{cases}\frac{\text{sim}(y_t,&space;y_i)}{\sum_{j=1}^N&space;\text{sim}(y_t,&space;y_j)},&space;&&space;y_i&space;\in&space;\text{top&space;N}&space;\\&space;0,&space;&&space;y_i&space;\not&space;\in&space;\text{top&space;N}&space;\end{cases}" title="y_i^* = \begin{cases}\frac{\text{sim}(y_t, y_i)}{\sum_{j=1}^N \text{sim}(y_t, y_j)}, & y_i \in \text{top N} \\ 0, & y_i \not \in \text{top N} \end{cases}" />
 * Weighted similarity loss is negative (please refer to the paper for mathematical details)
