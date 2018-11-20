@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # DATA FILES #
     train_loc = locations['train_loc']
-    dev_loc = locations['dev_loc']
+    dev_loc = locations['test_loc']
     fasttext_loc = locations['embeddings_loc']
     w2vec_loc = locations['w2vec_loc']
     model_loc = locations['model_loc']

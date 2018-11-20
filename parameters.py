@@ -10,7 +10,7 @@ params = {
 
 locations = {
     'train_loc': 'data/train',
-    'dev_loc': 'data/dev',
+    'test_loc': 'data/dev',
     'embeddings_loc': 'vocabulary/crawl-300d-2M.vec',
     'w2vec_loc': 'vocabulary/word_to_vec.pkl',
     'model_loc': 'models/model.pt',
