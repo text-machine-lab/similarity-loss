@@ -49,12 +49,29 @@ Possible values for the <loss> argument:
 * `weighted-sim`: Weighted similarity loss
 * `soft-label`: Soft label loss
 
-Parameters used for autoencoder training are specified in `parameters.py` and can be modified. They include files locations, the batch size, the number of epochs, the maximum sentence length, the embedding dimension, and the hidden size of the used LSTM.
+Parameters used for autoencoder training are specified in `parameters.py` and can be modified. They include the used files locations, the batch size, the number of epochs, the maximum sentence length, the embedding dimension, and the hidden size of the encoding (and the decoding) LSTM.
 
 ### External usage
 Alternatively, the losses are implemented as PyTorch Module classes and can be incorporated directly into other models.
 
-**Notes**
+You can replace the conventional `nn.CrossEntropy()` loss with any of the three loss classes implemented in `loss.py`, namely 
+`WeightedSimilarityLoss()`, `WeightedCrossEntropyLoss()` and `SoftLabelLoss()`. 
+1. Instantiate any of the classes in your training script, e.g.:
+```python
+criterion = SoftLabelLoss(stop_idx, embeddings, N=N, ignore_idx=pad_idx)
+```
+2. Compute the loss by running the forward propagation, e.g.:
+```python
+outputs = model(inputs)
+loss = criterion(outputs, targets)
+```
+3. Compute the gradients as:
+```python
+loss.backward()
+```
+Note that every loss class takes a tensor of word embeddings as input (for computing of the word similarities across the vocabulary). Also note that `SoftLabelLoss` takes two additional parameters: `N` for limiting the consideration of word neighbors to only top N closest ones and `stop_idcs` for encoding stop words using a traditional one hot encoding scheme. For more details about every loss function please refer to the paper, to the implementation and to the notes below.
+
+## Notes
 - Weighted similarity loss is negative (please refer to the paper for mathematical details)
 - Soft label loss considers N nearest word neighbors, where N is a model parameter. The nomalization of the encoded true-label token can be switched off by passing the `normalization=False` to the loss constructor. if `N=1` than the loss is identical to regular cross entropy. If `N` is equal to the vocabulary size, the loss becomes the _Weighted cross entropy loss_
 - If the vocabulary size is substantially large, consider pruning the vocabulary (such that the word-similarity matrix can fit in the memory). The `Vocabulary` class used in the autoencoder provides the `prune()` method.
