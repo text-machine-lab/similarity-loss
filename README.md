@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ```
 
 ## Requirements and dependencies
-Requires PyTorch v0.4 and higher.
+Requires PyTorch v0.4.0.
 For installation from source please refer to:
 https://github.com/pytorch/pytorch
 
