@@ -1,5 +1,5 @@
 # Similarity-based reconstruction losses
-based on the paper "Kovaleva, O., Rumshisky, A. and Romanov, A., 2018. Similarity-Based Reconstruction Loss for Meaning Representation. EMNLP 2018" [PDF](http://www.aclweb.org/anthology/D18-1525) [BibTex](https://bit.ly/2zufchE)
+based on the paper "Kovaleva, O., Rumshisky, A. and Romanov, A., 2018. Similarity-Based Reconstruction Loss for Meaning Representation. EMNLP 2018" [PDF](http://www.aclweb.org/anthology/D18-1525) | [BibTex](https://bit.ly/2zufchE)
 
 
 ## Description
